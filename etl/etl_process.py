@@ -1,13 +1,23 @@
+"""
+Модуль ETL процесса
+"""
 import json
 import time
 import uuid
+
 from clickhouse_driver import Client
 from kafka import KafkaConsumer
-from backoff import backoff
-from settings import settings
+
+from utils.backoff import backoff
+from utils.clients import kafka_consumer, clickhouse_client
 
 
-def create_table(client) -> None:
+def create_table(client: Client) -> None:
+    """
+    Создание таблицы в Clickhouse
+
+    :param client: клиент Clickhouse
+    """
     client.execute(
         """
         CREATE TABLE IF NOT EXISTS views (
@@ -22,17 +32,23 @@ def create_table(client) -> None:
 
 
 def etl(kafka_consumer: KafkaConsumer, clickhouse_client: Client) -> None:
+    """
+    ETL процесс, переносит данные из Kafka в Clickhouse
+
+    :param kafka_consumer: консьюмер кафки
+    :param clickhouse_client: клиент Clickhouse
+    """
     data = []
     start = time.time()
     for message in kafka_consumer:
         msg = (
-            str(uuid.uuid4()), 
+            str(uuid.uuid4()),
             *str(message.key.decode('utf-8')).split(':'),
             message.value['timestamp_movie'],
             message.timestamp,
         )
         data.append(msg)
-        if (len(data) == 1) or (time.time() - start >= 60):
+        if (len(data) >= 1) or (time.time() - start >= 60):
             clickhouse_client.execute(
                 "INSERT INTO views (id, user_id, movie_id, timestamp_movie, time) VALUES",
                 data,
@@ -43,21 +59,15 @@ def etl(kafka_consumer: KafkaConsumer, clickhouse_client: Client) -> None:
 
 
 @backoff()
-def main() -> None:
-    kafka_consumer = KafkaConsumer(
-        settings.KAFKA_TOPIC_PREFIX,
-        group_id='timestamp_movie',
-        bootstrap_servers=f"{settings.KAFKA_BROKER_HOST}:{settings.KAFKA_BROKER_PORT}",
-        enable_auto_commit=False,
-        value_deserializer=lambda x: json.loads(x.decode('utf-8'))
-    )
-    clickhouse_client = Client(
-        host=settings.clickhouse_host,
-        port=settings.clickhouse_port
-    )
+def main(kafka_consumer, clickhouse_client) -> None:
+    """
+    Основная функция ETL процесса
+    :param kafka_consumer: консьюмер кафки
+    :param clickhouse_client: клиент Clickhouse
+    """
     create_table(clickhouse_client)
     etl(kafka_consumer, clickhouse_client)
 
 
 if __name__ == '__main__':
-    main()
+    main(kafka_consumer, clickhouse_client)

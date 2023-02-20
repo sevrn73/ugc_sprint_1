@@ -1,3 +1,6 @@
+"""
+Модуль backoff
+"""
 from functools import wraps
 from time import sleep
 from logger import logger

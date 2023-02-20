@@ -34,6 +34,6 @@ async def shutdown_event():
 if __name__ == '__main__':
     uvicorn.run(
         "main:app",
-        host=settings.ugs_host,
-        port=settings.ugs_port,
+        host=settings.ugc_host,
+        port=settings.ugc_port,
     )

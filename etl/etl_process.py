@@ -9,7 +9,7 @@ from clickhouse_driver import Client
 from kafka import KafkaConsumer
 
 from utils.backoff import backoff
-from utils.clients import kafka_consumer, clickhouse_client
+from utils.clients import get_kafka, get_clickhouse
 
 
 def create_table(client: Client) -> None:
@@ -59,15 +59,20 @@ def etl(kafka_consumer: KafkaConsumer, clickhouse_client: Client) -> None:
 
 
 @backoff()
-def main(kafka_consumer, clickhouse_client) -> None:
+def main() -> None:
     """
     Основная функция ETL процесса
-    :param kafka_consumer: консьюмер кафки
-    :param clickhouse_client: клиент Clickhouse
     """
+    kafka_consumer = get_kafka()
+    clickhouse_client = get_clickhouse()
     create_table(clickhouse_client)
     etl(kafka_consumer, clickhouse_client)
 
 
+
 if __name__ == '__main__':
-    main(kafka_consumer, clickhouse_client)
+    main()
+
+
+if __name__ == '__main__':
+    main()

@@ -3,6 +3,9 @@ from aiokafka import AIOKafkaProducer
 from core.config import settings
 
 class KafkaProducer:
+    """
+    Продьюсер Kafka
+    """
     kafka_producer = None
 
     async def get_producer(self):

@@ -1,6 +1,22 @@
 version: '3.7'
 
 services:
+  nginx:
+    image: nginx:1.23.2
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/configs:/etc/nginx/conf.d:ro
+      - ./data:/data/:ro
+    depends_on:
+      - ugc.kafka
+      - ugc.kafka-ui
+      - clickhouse-node1
+      - ugc_api
+      - etl
+    ports:
+      - "80:80"
+
   ugc.zookeeper:
     image: confluentinc/cp-zookeeper:6.2.0-3-ubi8
     hostname: ugc.zookeeper
@@ -28,31 +44,27 @@ services:
     image: provectuslabs/kafka-ui
     hostname: ugc.kafka-ui
     container_name: ugc.kafka-ui
-    ports:
-      - "31205:8080"
     environment:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ugc.kafka:9092
       KAFKA_CLUSTERS_0_NAME: ugc.kafka
       KAFKA_CLUSTERS_0_ZOOKEEPER: ugc.zookeeper:2181
+    ports:
+      - "31205:8080"
 
-  ugc:
-    container_name: ugc-api
+  ugc_api:
+    container_name: ugc_api
     build:
       context: ./ugc/src
-    ports:
-      - "8001:8001"
     env_file:
       - ./.env
     depends_on:
       - ugc.kafka
+    restart: on-failure
 
   clickhouse-node1:
     image: yandex/clickhouse-server:21.3
     container_name: clickhouse-node1
     hostname: clickhouse-node1
-    ports:
-      - "8123:8123"
-      - "9000:9000"
     volumes:
       - ./clickhouse/node1:/etc/clickhouse-server
     depends_on:
@@ -94,3 +106,4 @@ services:
     depends_on:
       - clickhouse-node1
       - ugc.kafka
+    restart: on-failure

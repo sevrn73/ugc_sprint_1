@@ -5,13 +5,13 @@ from broker.kafka_settings import kafka
 from api.models.progress_film import ProgressFilmModel
 from services.auth import JWTBearer
 
-router = APIRouter(prefix='/ugc/v1', tags=['progress_film'])
+router = APIRouter(prefix="/ugc_api/v1", tags=["progress_film"])
 
 
-@router.post('/progress_film/')
+@router.post("/progress_film/")
 async def post_event(
     progress_film: ProgressFilmModel,
-    user_id = Depends(JWTBearer()),
+    user_id=Depends(JWTBearer()),
 ):
     try:
         await kafka.kafka_producer.send(
@@ -21,5 +21,4 @@ async def post_event(
         )
         return HTTPStatus.OK
     except Exception as e:
-        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                            detail=e.args[0].str())
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=e.args[0].str())

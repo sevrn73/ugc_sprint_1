@@ -6,6 +6,6 @@
 
 ## Доступные сервисы
 
-- [UGC Api](http://localhost:8001/docs)
-- [Kafka UI](http://localhost:31205/)
-- [Для получения данных из ноды CH ](http://localhost:8123/?query=SELECT%20*%20FROM%20views)
+- [UGC Api](http://localhost:80/ugc_api/openapi)
+- [Kafka UI](http://localhost:31205)
+- [Для получения данных из ноды CH ](http://localhost:31205/?query=SELECT%20*%20FROM%20views)

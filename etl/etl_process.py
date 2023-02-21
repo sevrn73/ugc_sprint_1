@@ -1,15 +1,16 @@
 """
 Модуль ETL процесса
 """
-import json
+from utils.logger import logger
 import time
 import uuid
 
 from clickhouse_driver import Client
 from kafka import KafkaConsumer
+from kafka.errors import NoBrokersAvailable
 
 from utils.backoff import backoff
-from utils.clients import get_kafka, get_clickhouse
+from utils.clients import get_kafka, get_clickhouse, close_clickhouse_connection, close_kafka_connection
 
 
 def create_table(client: Client) -> None:
@@ -31,6 +32,20 @@ def create_table(client: Client) -> None:
     )
 
 
+@backoff()
+def load_to_clickhouse(clickhouse_client: Client, data: list) -> None:
+    """
+    Загрузка в Clickhouse
+
+    :param client: клиент Clickhouse
+    :param data: данные для переноса в Clickhouse
+    """
+    clickhouse_client.execute(
+        "INSERT INTO views (id, user_id, movie_id, timestamp_movie, time) VALUES",
+        data,
+    )
+
+
 def etl(kafka_consumer: KafkaConsumer, clickhouse_client: Client) -> None:
     """
     ETL процесс, переносит данные из Kafka в Clickhouse
@@ -43,36 +58,37 @@ def etl(kafka_consumer: KafkaConsumer, clickhouse_client: Client) -> None:
     for message in kafka_consumer:
         msg = (
             str(uuid.uuid4()),
-            *str(message.key.decode('utf-8')).split(':'),
-            message.value['timestamp_movie'],
+            *str(message.key.decode("utf-8")).split(":"),
+            message.value["timestamp_movie"],
             message.timestamp,
         )
         data.append(msg)
         if (len(data) >= 1) or (time.time() - start >= 60):
-            clickhouse_client.execute(
-                "INSERT INTO views (id, user_id, movie_id, timestamp_movie, time) VALUES",
-                data,
-            )
+            load_to_clickhouse(clickhouse_client, data)
             data = []
             start = time.time()
             kafka_consumer.commit()
 
 
-@backoff()
 def main() -> None:
     """
     Основная функция ETL процесса
     """
-    kafka_consumer = get_kafka()
-    clickhouse_client = get_clickhouse()
-    create_table(clickhouse_client)
-    etl(kafka_consumer, clickhouse_client)
+    while True:
+        try:
+            kafka_consumer = get_kafka()
+            clickhouse_client = get_clickhouse()
+            create_table(clickhouse_client)
+            etl(kafka_consumer, clickhouse_client)
+        except NoBrokersAvailable:
+            logger.error("Error connecting to kafka")
+
+        finally:
+            close_kafka_connection(kafka_consumer)
+            close_clickhouse_connection(clickhouse_client)
+
+        time.sleep(1)
 
 
-
-if __name__ == '__main__':
-    main()
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

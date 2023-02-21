@@ -1,0 +1,8 @@
+MOVIE_ID = "d50728e2-4f3e-4070-a5ba-6c3de400a9a4"
+TIMESTAMP_MOVIE = 5025
+HEADERS = {
+    "Content-Type": "application/json",
+    "Authorization": (
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwiaWF0IjoxNjc2OTk4MDY0LCJqdGkiOiI4OGNkMTM0MS0wYjQxLTQwMzItYTFmYS02YzNjYWVmNWU0MDIiLCJ0eXBlIjoiYWNjZXNzIiwic3ViIjoiYTM4MmIwNDItMjBhYS00ZTZkLTlhOGMtNGIzZTAwOWZiNmY5IiwibmJmIjoxNjc2OTk4MDY0LCJleHAiOjE2NzcwMDE2NjQsInJvbGVzIjpbImFkbWluIl19.gNZhXuurpCGU2I7NNLpfNY29ZpQjpklHAmLEuP4V3B0"
+    ),
+}

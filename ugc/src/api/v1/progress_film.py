@@ -5,7 +5,7 @@ from broker.kafka_settings import kafka
 from api.models.progress_film import ProgressFilmModel
 from services.auth import JWTBearer
 
-router = APIRouter(prefix="/ugc/v1", tags=["progress_film"])
+router = APIRouter(prefix="/ugc_api/v1", tags=["progress_film"])
 
 
 @router.post("/progress_film/")

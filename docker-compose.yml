@@ -48,6 +48,8 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ugc.kafka:9092
       KAFKA_CLUSTERS_0_NAME: ugc.kafka
       KAFKA_CLUSTERS_0_ZOOKEEPER: ugc.zookeeper:2181
+    ports:
+      - "31205:8080"
 
   ugc_api:
     container_name: ugc_api
@@ -57,6 +59,7 @@ services:
       - ./.env
     depends_on:
       - ugc.kafka
+    restart: on-failure
 
   clickhouse-node1:
     image: yandex/clickhouse-server:21.3

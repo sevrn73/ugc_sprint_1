@@ -11,7 +11,10 @@ from core.config import settings
 # initialize logger
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(
+    docs_url="/ugc_api/openapi",
+    openapi_url="/ugc_api/openapi.json",
+)
 
 app.include_router(router)
 

@@ -15,11 +15,11 @@ app = FastAPI()
 
 app.include_router(router)
 
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Initializing API ...")
     await kafka.get_producer()
-
 
 
 @app.on_event("shutdown")
@@ -28,10 +28,7 @@ async def shutdown_event():
     await kafka.stop_producer()
 
 
-
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host=settings.ugc_host,
